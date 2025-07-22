@@ -1,22 +1,60 @@
-import { useAppDispatch } from "@/app/hook"
-import { addBook } from "@/features/Books/bookSlice"
+import { useCreateBookMutation } from "@/api/baseApi";
+
 import type { Ibook } from "@/types"
+
 import { useForm } from "react-hook-form"
+import { useNavigate } from "react-router";
+import { toast, Toaster } from "sonner";
 
 
 const AddBook = () => {
 
-    const dispatch=useAppDispatch();
-
+    const [createBook,{}]=useCreateBookMutation();
+    const navigate = useNavigate();
     const {
             register,
             handleSubmit,
             formState: { errors },
+            reset,
         } = useForm<Ibook>()
 
-    const onSubmit = (data: Ibook) => {
-            console.log("Form submitted:", data)
-            dispatch(addBook(data));
+    const onSubmit = async (data: Ibook) => {
+            let availablity:boolean ;
+            if(String(data.available)==="1")availablity=true;
+            else availablity=false;
+            console.log(data);
+            const processedData = {
+                ...data,
+                available: availablity,
+            };
+            
+            
+            try{
+                const res= await createBook(processedData).unwrap();
+                toast.success("Book successfully Added !");
+                console.log(res);
+                reset() 
+                setTimeout(()=>{
+                    navigate("/books");
+                },2000)
+            }
+            catch(error :any){
+                console.error("Failed to Add book", error);
+                toast.error('Failed to Add book');
+
+                setTimeout(()=>{
+                    const error_message = error?.data?.message || "";
+                    if(error_message.includes("duplicate") && error_message.includes("isbn")){
+                        toast.warning('This ISBN is already exist. Try different one');
+                    }
+                    else{
+                        toast.warning('Something went wrong . Please check required field');
+                    }
+                },2000)
+                
+            }
+            
+            
         }
 
 
@@ -90,8 +128,8 @@ const AddBook = () => {
                     className="border p-2 rounded w-full"
                     {...register("available", { required: true })}
                     >
-                    <option value="true">True</option>
-                    <option value="false">False</option>
+                    <option value={1}>True</option>
+                    <option value={0}>False</option>
                     </select>
                 </div>
 
@@ -100,7 +138,8 @@ const AddBook = () => {
                     className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                 >
                     Add Book
-                </button>   
+                </button> 
+                <Toaster richColors position="bottom-right"/>  
             </form>
         </div>
     );

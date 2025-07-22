@@ -1,35 +1,58 @@
+import { useGetBookByIdQuery, useUpdateBookMutation } from "@/api/baseApi";
+import type { Ibook } from "@/types";
 import { useForm } from "react-hook-form"
-import { useParams } from "react-router"
+import { useNavigate, useParams } from "react-router"
+import { toast, Toaster } from "sonner";
 
-interface BookFormInputs {
-  title: string
-  author: string
-  genre: string
-  isbn: string
-  description?: string
-  copies: number
-  available: boolean
-}
+
 
 const UpdateBook = () => {
-    const { id } = useParams();
-    //console.log(id);
+    const { id }  = useParams<{ id: string }>();
+    const navigate= useNavigate();
+    const { data, isLoading, error} = useGetBookByIdQuery(String(id));
+    const [updateBook,{}] = useUpdateBookMutation();
     const {
-            register,
-            handleSubmit,
-            formState: { errors },
-        } = useForm<BookFormInputs>()
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<Ibook>()
     
-    const onSubmit = (data: BookFormInputs) => {
-            console.log("Form submitted:", data)
+    const onSubmit = async (value:Ibook) => {
+        
+        let availablity:boolean;
+        if(String(value.available)==="true")availablity=true;
+        else availablity=false;
+      
+        const updatedData = {
+            ...value,
+            available:availablity
         }
+        console.log(id);
+        console.log(updatedData);
+        try{
+            const res=await updateBook({id , updatedData}).unwrap();
+            console.log(res);
+            toast.success("Book successfully updated !")
+            setTimeout(()=>{
+                navigate("/books");
+            },2000)
+        }
+        catch(error){
+            toast.error("Failed to update")
+            console.error("Error :",error);
+            
+        }
+    }
+
+    if (isLoading) return <p>Loading...</p>;
+    if (error) return <p>Error</p>;   
     return (
         <div className="mt-[70px]">
             <h3 className="">Update Book</h3>
              <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 p-4 max-w-md mx-auto">
                 <div>
                     <label className="block text-left text-sm mb-1">Title</label>
-                    <input
+                    <input defaultValue={data?.book.title}
                     {...register("title", { required: "Title is required" })}
                     className="border p-2 rounded w-full"
                     />
@@ -37,7 +60,7 @@ const UpdateBook = () => {
                 </div>
                 <div>
                     <label className="block text-left text-sm mb-1">Author</label>
-                    <input
+                    <input defaultValue={data?.book.author}
                     {...register("author", { required: "Author is required" })}
                     className="border p-2 rounded w-full"
                     />
@@ -45,7 +68,7 @@ const UpdateBook = () => {
                 </div>
                 <div>
                     <label className="block text-left text-sm mb-1">Genre</label>
-                    <select
+                    <select defaultValue={data?.book.genre}
                     {...register("genre", { required: "Genre is required" })}
                     className="border p-2 rounded w-full"
                     >
@@ -61,7 +84,7 @@ const UpdateBook = () => {
                 </div>
                 <div>
                     <label className="block text-left text-sm mb-1">ISBN</label>
-                    <input
+                    <input defaultValue={data?.book.isbn}
                     {...register("isbn", { required: "ISBN is required" })}
                     className="border p-2 rounded w-full"
                     />
@@ -69,14 +92,14 @@ const UpdateBook = () => {
                 </div>
                 <div>
                     <label className="block text-left text-sm mb-1">Description</label>
-                    <textarea
+                    <textarea defaultValue={data?.book.description}
                     {...register("description")}
                     className="border p-2 rounded w-full"
                     />
                 </div>
                 <div>
                     <label className="block text-left text-sm mb-1">Copies</label>
-                    <input
+                    <input defaultValue={data?.book.copies}
                     type="number"
                     {...register("copies", {
                         required: "Copies are required",
@@ -89,7 +112,7 @@ const UpdateBook = () => {
                 </div>
                 <div>
                     <label className="block text-left text-sm mb-1">Available</label>
-                    <select
+                    <select defaultValue={String(data?.book.available)}
                     className="border p-2 rounded w-full"
                     {...register("available", { required: true })}
                     >
@@ -102,8 +125,9 @@ const UpdateBook = () => {
                     type="submit"
                     className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                 >
-                    Add Book
-                </button>   
+                    Update Book
+                </button> 
+                <Toaster richColors position="bottom-right"/>   
             </form>
         </div>
     );

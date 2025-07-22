@@ -4,15 +4,32 @@ import { MdEditSquare } from "react-icons/md";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { FaEye, FaBook } from "react-icons/fa";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useAppDispatch, useAppSelector } from '@/app/hook';
-import { deleteBook, selectBook } from '@/features/Books/bookSlice';
+
+import { useDeleteBookMutation, useGetBooksQuery } from '@/api/baseApi';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import type { IBookWithId } from '@/types';
+
+import { toast, Toaster } from 'sonner';
 
 
 const Books = () => {
 
-    const books = useAppSelector(selectBook);
-    const dispatch=useAppDispatch();
-    //console.log(books);
+    const {data,isLoading} = useGetBooksQuery(undefined);
+
+    const [deleteBook] = useDeleteBookMutation();
+    console.log(data);
+    const handleDelete = async (id: string) => {
+    try {
+        await deleteBook(id).unwrap();
+        toast.success("Book successfully deleted !");
+        
+    } catch (error) {
+        console.error("Failed to delete book", error);
+        toast.error('Failed to delete book')
+    }
+    };
+    
+    if (isLoading) return <p>Loading...</p>;
     return (
         <div className='mt-[50px]'>
             
@@ -31,21 +48,22 @@ const Books = () => {
                 </TableHeader>
                 <TableBody>
                     {
-                        books.map((book)=> (
-                            <TableRow key={book.id}>
-                                <TableCell className="font-medium">{book.title}</TableCell>
+                       !isLoading &&  data.data.map((book :IBookWithId)=> (
+                            
+                            <TableRow key={book._id}>
+                                <TableCell className="font-medium text-[#722323]">{book.title}</TableCell>
                                 <TableCell>{book.author}</TableCell>
                                 <TableCell>{book.genre}</TableCell>
                                 <TableCell>{book.isbn}</TableCell>
                                 <TableCell>{book.copies}</TableCell>
-                                <TableCell>{book.available}</TableCell>
+                                <TableCell>{book.available ? "True":"False"}</TableCell>
                                 <TableCell >
                                     <TooltipProvider>
                                         <div className='flex space-x-4'>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                <Link to="/">
-                                                    <FaEye  className="text-xl cursor-pointer"/>
+                                                <Link to={`/books/${book._id}`}>
+                                                    <FaEye  className="text-xl text-[#722323] cursor-pointer"/>
                                                 </Link>
                                                 </TooltipTrigger>
                                                 <TooltipContent >
@@ -54,8 +72,8 @@ const Books = () => {
                                             </Tooltip>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                <Link to={`/edit-book/${book.id}`}>
-                                                    <MdEditSquare className="text-xl cursor-pointer" />
+                                                <Link to={`/edit-book/${book._id}`}>
+                                                    <MdEditSquare className="text-xl text-[#722323] cursor-pointer" />
                                                 </Link>
                                                 </TooltipTrigger>
                                                 <TooltipContent >
@@ -64,28 +82,44 @@ const Books = () => {
                                             </Tooltip>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                <Link to="/">
-                                                    <FaBook className="text-[18px] cursor-pointer" />
-                                                </Link>
+                                                {book.available ? (
+                                                    <Link to={`/borrow/${book._id}`}>
+                                                        <FaBook className="text-[18px] text-[#722323] cursor-pointer hover:scale-110 transition" />
+                                                    </Link>
+                                                    ) : (
+                                                        <FaBook className="text-[18px] text-gray-400 cursor-not-allowed opacity-50" />
+                                                        )}
                                                 </TooltipTrigger>
                                                 <TooltipContent >
-                                                <p>Borrow</p>
+                                                <p>Not available</p>
                                                 </TooltipContent>
                                             </Tooltip>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                <Link to="/">
-                                                    <RiDeleteBin5Fill onClick={()=>dispatch(deleteBook(book.id))} className="text-xl cursor-pointer" />
-                                                </Link>
-                                                </TooltipTrigger>
-                                                <TooltipContent >
-                                                <p>Delete</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                            
+
+                                            <AlertDialog>
+                                                <AlertDialogTrigger>
+                                                    
+                                                    <RiDeleteBin5Fill className="text-xl cursor-pointer text-red-500" />
+                                                    
+                                                
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action cannot be undone. This will permanently delete book.
+                                                    </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction className='bg-red-500' onClick={()=>handleDelete(book._id)}>Delete</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                                
+                                                </AlertDialog>
+                                                
                                         </div>
                                     </TooltipProvider>
-                                    
+                                    <Toaster richColors position="bottom-right"/>
                                 </TableCell>
                             </TableRow>
                             

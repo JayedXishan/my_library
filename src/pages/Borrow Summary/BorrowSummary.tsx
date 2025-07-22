@@ -1,9 +1,49 @@
-import React from 'react';
+import { useGetBorrowedBooksQuery } from '@/api/baseApi';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 
 const BorrowSummary = () => {
+    const {data,isLoading}=useGetBorrowedBooksQuery(undefined);
+
+    if(isLoading)return <p>Loading...</p>
+    console.log(data);
     return (
         <div>
-            this is from borrow summary
+
+            <Table >
+                
+                <TableHeader>
+                    <TableRow >
+                    <TableHead className='text-center'>Book Title</TableHead>
+                    <TableHead className='text-center'>ISBN</TableHead>
+                    <TableHead className='text-center'>Total Quantity borrowed</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {
+                        !isLoading &&  data.data.map((borrowedBook:any)=>(
+                            <TableRow key={borrowedBook.book.isbn}>
+                                <TableCell>
+                                    {
+                                        borrowedBook.book.title
+                                    }
+                                </TableCell>
+                                <TableCell>
+                                    {
+                                        borrowedBook.book.isbn
+                                    }
+                                </TableCell>
+                                <TableCell>
+                                    {
+                                        borrowedBook.totalQuantity
+                                    }
+                                </TableCell>
+                            </TableRow>
+                            
+                        ))
+                    }
+                </TableBody>
+            </Table>
         </div>
     );
 };
