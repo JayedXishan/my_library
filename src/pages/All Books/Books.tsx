@@ -32,6 +32,9 @@ const Books = () => {
     if (isLoading) return <p>Loading...</p>;
     return (
         <div className='mt-[50px]'>
+            <div className='mb-[20px]'>
+                <h3 className='font-bold text-[#722323]'>All Books</h3>
+            </div>
             
             <Table >
                 
@@ -91,7 +94,10 @@ const Books = () => {
                                                         )}
                                                 </TooltipTrigger>
                                                 <TooltipContent >
-                                                <p>Not available</p>
+                                                    {
+                                                        book.available ? (<p>Borrow</p>):(<p>Not available</p>)
+                                                    }
+                                                
                                                 </TooltipContent>
                                             </Tooltip>
 
@@ -111,7 +117,7 @@ const Books = () => {
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
                                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction className='bg-red-500' onClick={()=>handleDelete(book._id)}>Delete</AlertDialogAction>
+                                                    <AlertDialogAction className='bg-[#B82132]' onClick={()=>handleDelete(book._id)}>Delete</AlertDialogAction>
                                                     </AlertDialogFooter>
                                                 </AlertDialogContent>
                                                 

@@ -9,7 +9,9 @@ const BorrowSummary = () => {
     console.log(data);
     return (
         <div>
-
+            <div className='mb-[20px] mt-[20px]'>
+                <h3 className='font-bold text-[#722323]'>Borrow Summary</h3>
+            </div>
             <Table >
                 
                 <TableHeader>
