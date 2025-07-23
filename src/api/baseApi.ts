@@ -1,4 +1,4 @@
-import type { Ibook, IBookByIdResponse} from '@/types'
+import type { IBookByIdResponse} from '@/types'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 

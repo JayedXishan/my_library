@@ -12,7 +12,6 @@ const BorrowBook = () => {
     const {
             register,
             handleSubmit,
-            formState: { errors },
         } = useForm()
 
     const onSubmit = async (value :any) =>{

@@ -103,7 +103,7 @@ const UpdateBook = () => {
                     type="number"
                     {...register("copies", {
                         required: "Copies are required",
-                        min: { value: 1, message: "Must be 1 or more" },
+                        min: { value: 0, message: "Must be 0 or more" },
                         valueAsNumber: true,
                     })}
                     className="border p-2 rounded w-full"
